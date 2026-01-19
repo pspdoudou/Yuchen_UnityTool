@@ -184,11 +184,7 @@ public class CustomCharacterMovement : CharacterMovement3D
          Rigidbody.useGravity = _savedUseGravity;
          Rigidbody.linearDamping = _savedLinearDamping;
          Acceleration = _dashSavedAcc;
-
-        
-       // yield return new WaitForSeconds(_dashCooldown); // dash cool down
-        
-
+       
     }
 
 
@@ -364,7 +360,6 @@ public class CustomCharacterMovement : CharacterMovement3D
         Acceleration = _savedAcceleration;
         if (_slideCoroutine != null) StopCoroutine(_slideCoroutine);
         _isInSlideRoutine = false ;
-        //float heightY = transform.localScale.y;
         float resetTimer = 0f;
         while (resetTimer < 0.2f && IsSliding)
         {
@@ -389,72 +384,13 @@ public class CustomCharacterMovement : CharacterMovement3D
 
     private void UpdateSlideCoolDown()
     {
-        // if(IsSliding) currentSpeed
         float hi = _slideTargetSpeed;
         float lo = _stopSlideSpeedThreshold;
 
         float p = (hi > lo) ? Mathf.InverseLerp(hi, lo, HorizontalSpeed) : 1f;
         _slideProgPrec?.Invoke(p);
-        //Debug.Log(p);
 
     }
-    /* private void SlideUpdate()
-     {
-
-         Vector3 Vel = Rigidbody.linearVelocity;
-         float VelY = Vel.y;
-         Vel.y = 0f;
-
-         if (_slideBoostTimer < _slideAcceleDuration) // acceleration
-         {
-             _slideBoostTimer += Time.fixedDeltaTime;
-             float k = Mathf.Clamp01(_slideBoostTimer / _slideAcceleDuration);
-             float curSpeed = Mathf.Lerp(_slideStartSpeed, _slideTargetSpeed, Mathf.SmoothStep(0f, 1f, k));
-             Vel = _slideStartDir * curSpeed;
-         }
-         else  // deceleration
-         {
-             float speed = Vel.magnitude;
-             Vector3 speedDir = Vel.normalized;
-             Vector3 moveinput = MoveInput.normalized;
-             if (MoveInput.magnitude > 0.0001f) // if player is doing the mirco adjustment, apply it to the player Velocity
-             {
-                 // the cos0 between current speed vector and moveInput Vector, if same direction > 0, if reverse direction < 0 
-                 float dot = Vector3.Dot(speedDir, moveinput);
-
-                 // Calculate the perpendicular amount that the moveInput on the Speed Vector, basically the 'Side' portion relatively to the speed vector 
-                 // 0 means no 'side' effect , 1 means vertical to the speed vector.
-                 float perpAmount = Mathf.Sqrt(Mathf.Clamp01(1f - dot * dot));
-
-                 //convert the steering Degress to Radian based on the 'perpendicular amount' calculated aboved
-                 float maxRad = _slideSteerDegPerSec * Mathf.Deg2Rad * Time.fixedDeltaTime * perpAmount;
-
-                 // Vector3 targetDir = MoveInput.normalized;
-                 // if (targetDir.sqrMagnitude > 0.0001f)
-
-                 // calculate the new speed vector 
-                 Vel = Vector3.RotateTowards(Vel, moveinput * speed, maxRad, float.MaxValue);
-
-                 float extraBrake = (dot < 0) ? _slideBrakeStrength * (-dot) : 0f; // the more dot close to -1, the more brake there is
-                 newSpeed = Mathf.Max(0f, speed - (_slideFriction + extraBrake) * Time.fixedDeltaTime);
-             }
-             else
-             {
-                 newSpeed = Mathf.Max(0f, speed - _slideFriction * Time.fixedDeltaTime);
-             }
-             if (speed > 0.001f) Vel = Vel.normalized * newSpeed;
-         }
-
-         Rigidbody.linearVelocity = new Vector3(Vel.x, VelY, Vel.z);
-
-         float accProg = Mathf.Clamp01(_slideBoostTimer / _slideAcceleDuration);
-         float accHeight = Mathf.Lerp(_originalScale.y, _targetScale.y, Mathf.SmoothStep(0f, 1f, accProg));
-         transform.localScale = new Vector3(_originalScale.x, accHeight, _originalScale.z);
-
-         if (Vel.magnitude <= _stopSlideSpeedThreshold || !IsGrounded) StopSliding();
-
-     }
-     */
 
     #endregion
 
@@ -468,9 +404,6 @@ public class CustomCharacterMovement : CharacterMovement3D
     public void TryDiving(bool isTryDiving)
     { 
         _isDiving = isTryDiving;
-       // if (isTryDiving) Gravity = _gravity * _gravityMutiplier * slowMoDivingMultilier;
-       // else Gravity = _gravity;
-
     }
 
     #endregion
@@ -520,8 +453,7 @@ public class CustomCharacterMovement : CharacterMovement3D
         StopCoroutine(StandUpRoutine());
         Speed = Speed * _crouchSpeedMultiplier;
 
-        //Vector3 Vel = Rigidbody.linearVelocity;
-        //IsSliding = true;
+
         float goDownTimer = 0f;
         while (goDownTimer < _crouchGoDownDur)
         {
@@ -538,17 +470,7 @@ public class CustomCharacterMovement : CharacterMovement3D
 
     public IEnumerator StandUpRoutine()
     {
-        StopCoroutine(CrouchGoDownRoutine());
-
-       // while (!CanStandUp())
-        //{
-           // var v = Rigidbody.linearVelocity;
-          //  v = new Vector3(Mathf.Lerp(v.x, 0f, 0.5f), v.y, Mathf.Lerp(v.z, 0f, 0.5f));
-         //   Rigidbody.linearVelocity = v;
-
-           // yield return null;
-        //}
-        
+        StopCoroutine(CrouchGoDownRoutine());       
         //Play sfx
         if (!_crouchEndEvent.IsNull)
         {
