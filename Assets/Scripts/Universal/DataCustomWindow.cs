@@ -1,5 +1,3 @@
-# if UNITY_EDITOR
-
 
 using System;
 using Sirenix.OdinInspector;
@@ -138,4 +136,3 @@ public class GlitchHopCustomWindow : OdinMenuEditorWindow
 
 
 }
-#endif

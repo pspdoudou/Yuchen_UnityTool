@@ -10,7 +10,7 @@ public class SlowMotionController : MonoBehaviour
 {
     [SerializeField, Range(0.01f, 1f), Tooltip("use the gun data first, if there is no player controller then use this")] private float slowScale = 0.2f;
     [field: SerializeField] public float MaxSlowMoDuration { get; private set; } = 3f;
-    [SerializeField] private BoolEventAsset slowMotionEvent;
+    //[SerializeField] private BoolEventAsset slowMotionEvent; // can use event asset to trigger slowmo
     [SerializeField] private FloatEventAsset slowMoProgressEvent;
     [SerializeField] private float slowMoThreshold= 0.1f;
     [SerializeField] private PlayerController playerController;
@@ -27,7 +27,6 @@ public class SlowMotionController : MonoBehaviour
 
     [Header("SFX")] [SerializeField] private StudioEventEmitter slowMotionSnapShotEmitter;
     
-    
     private ChromaticAberration chromaticAberration;
     private Coroutine SLowMoTranCor;
 
@@ -36,7 +35,7 @@ public class SlowMotionController : MonoBehaviour
     private float rechargeCdTimer;
     public float Current { get; protected set; }
     private bool isGamePaused;
-    private float slowMoTickMultiplier => playerController == null ? 1f : playerController.CurrentRangedWeapon.RangedWeaponData.slowMoTickMultiplier;
+    private float slowMoTickMultiplier => playerController == null ? 1f : playerController.CurrentRangedWeapon.RangedWeaponData.slowMoTickMultiplier; // decide the duration of slowmo
     private float slowMoScale => playerController == null ? slowScale : playerController.CurrentRangedWeapon.RangedWeaponData.slowMoScale;
     private float unscaledDeltaTime => isGamePaused? 0f: Time.unscaledDeltaTime * slowMoTickMultiplier;
 
@@ -70,7 +69,7 @@ public class SlowMotionController : MonoBehaviour
             // real time
             if (Time.timeScale != 0 && DoDecay)
             {
-                Current -= unscaledDeltaTime;
+                Current -= unscaledDeltaTime; // Duration can be different by tweaking slowMoTickMultiplier on different guns
                 if (Current <= 0f) ExitSlowMo();
             }
         }
@@ -93,13 +92,13 @@ public class SlowMotionController : MonoBehaviour
         slowMoProgressEvent?.Invoke(Mathf.Clamp01(Current / MaxSlowMoDuration));
     }
 
-    public void OnSlowEvent(bool enter)
+    public void OnSlowEvent(bool enter) // called by the player controller
     {
         if (enter) EnterSlowMo();
         else ExitSlowMo();
     }
 
-    private void OnGamePaued(bool onGamePaused)
+    private void OnGamePaued(bool onGamePaused) // called if game paused
     {
         isGamePaused = onGamePaused;
     }
@@ -110,11 +109,10 @@ public class SlowMotionController : MonoBehaviour
         if (IsSlowing) return;
         if (Current <= 0f) return; 
         IsSlowing = true;
-        if (SLowMoTranCor != null) StopCoroutine(SLowMoTranCor);
-        //StartCoroutine(SlowMoLerp(slowMoScale, 1f));
-
-        if (chromaticAberration != null) chromaticAberration.intensity.Override(1f);
-        Time.timeScale = slowMoScale;
+        if (SLowMoTranCor != null) StopCoroutine(SLowMoTranCor); 
+        if (chromaticAberration != null) chromaticAberration.intensity.Override(1f); //feedback
+        // slow down time
+        Time.timeScale = slowMoScale; 
         Time.fixedDeltaTime = baseFixedDT;
         
         OverrideSoundPitch(slowMoScale);
@@ -125,16 +123,11 @@ public class SlowMotionController : MonoBehaviour
         if (!IsSlowing) return;
         IsSlowing = false;
 
-        if (!isGamePaused) SLowMoTranCor = StartCoroutine(SlowMoLerp(1f, 0f));
-       // if (chromaticAberration != null) chromaticAberration.intensity.Override(0f);
-        //if(!isGamePaused)Time.timeScale = 1f;
+        if (!isGamePaused) SLowMoTranCor = StartCoroutine(SlowMoLerp(1f, 0f)); // slowmo transition Lerp, only transit when exiting slowmo
         Time.fixedDeltaTime = baseFixedDT;
         rechargeCdTimer = rechargeDelay; 
 
     }
-
-    //public float Progress01 => Mathf.Clamp01(current / maxSlowMoDuration);
-    public bool CanEnter => !IsSlowing && ( Current > 0f);
 
     private IEnumerator SlowMoLerp(float targetTimeScale, float targetCBInten)
     {
@@ -143,20 +136,20 @@ public class SlowMotionController : MonoBehaviour
         float currentTimeScale;
         float currentCBInten;
         float t = 0;
-        while (t < exitTransitionTime)
+        while (t < exitTransitionTime) 
         {
-            if (isGamePaused)
+            if (isGamePaused) // if the game is pause, loop the coroutine, so it won't exit slowmo
             {
                 yield return new WaitWhile(() => isGamePaused);
                 
                 continue;
             }
-
+            // lerp time scale
             t += Time.unscaledDeltaTime;
             float prog = Mathf.SmoothStep(0, 1, t/exitTransitionTime);
             currentTimeScale = Mathf.Lerp(initTimeScale, targetTimeScale, prog);
             Time.timeScale = currentTimeScale;
-            if (chromaticAberration != null)
+            if (chromaticAberration != null) // feedback
             {
                 currentCBInten = Mathf.Lerp(initCBInten, targetCBInten, prog);
                 chromaticAberration.intensity.Override(currentCBInten);
@@ -186,5 +179,7 @@ public class SlowMotionController : MonoBehaviour
             
         }
     }
+
+    public bool CanEnter => !IsSlowing && (Current > 0f); // can be called externally to prevent multi trigger
 
 }

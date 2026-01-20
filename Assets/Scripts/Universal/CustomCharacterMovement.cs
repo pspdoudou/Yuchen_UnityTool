@@ -88,7 +88,6 @@ public class CustomCharacterMovement : CharacterMovement3D
 
     #region Dashing
     [Header("Dash Settings")]
-    //[SerializeField, HideInInspector] private float _dashImpulse = 20f; //Dash force,  OBSOLETE!
     [SerializeField] private float _dashDistance = 6f;
     [SerializeField] private float _dashAccDuration = 0.15f;
     [SerializeField] private float _stoppingTime = 0.1f;
@@ -121,10 +120,10 @@ public class CustomCharacterMovement : CharacterMovement3D
     }
     private IEnumerator DashRoutine(Vector3 dir)
     {
+        // cache initial setting
         Acceleration = 0f;
         _dashTimer = 0f;
         IsDashing = true;        
-        // cache initial setting
         _savedUseGravity = Rigidbody.useGravity;
         _savedLinearDamping = Rigidbody.linearDamping;
         _preDashFlatVel = HorizontalVel;
@@ -134,7 +133,8 @@ public class CustomCharacterMovement : CharacterMovement3D
         dir = dir.normalized;
         float dashSpeed = _dashDistance / _dashAccDuration; //calculate the speed
         float dashPassIntensity;
-        //disable all factor than can affect the dash
+
+        //disable all factor that can affect the dash
         Rigidbody.useGravity = false;  
         Rigidbody.linearDamping = 0f;
 
@@ -216,7 +216,6 @@ public class CustomCharacterMovement : CharacterMovement3D
     [SerializeField, Tooltip("The Acceleration Time")] private float _slideAcceleDuration = 0.2f;
     [SerializeField, Tooltip("The Slide Speed = this factor * current speed")] private float _slideSpeedMultiplier = 4f;
     [SerializeField, Tooltip("The Slide Height =  this factor * player scale")] private float _slideHeightMultiplier = 0.5f;
-    //[SerializeField] private float _slideSpeedDampening = 0.9f;
     [SerializeField, Tooltip("The Speed will be reduced by this friction")] private float _slideFriction = 3f;
     [SerializeField, Tooltip("The Direction Control when player sliding")] private float _slideSteerDegPerSec = 50f;
     [SerializeField, Tooltip("When Slide Speed reaches this threshold, slide stops")] private float _stopSlideSpeedThreshold = 0.5f;
@@ -252,8 +251,6 @@ public class CustomCharacterMovement : CharacterMovement3D
         _slideStartDir = _vel.normalized;
         _slideStartSpeed = Mathf.Max(0.01f, _vel.magnitude);
         _slideTargetSpeed = _slideStartSpeed * _slideSpeedMultiplier;
-        //_slideBoostTimer = 0f;
-
        _slideCoroutine = StartCoroutine(SlideRoutine(SlideDir));
 
     }
@@ -264,8 +261,6 @@ public class CustomCharacterMovement : CharacterMovement3D
         OnSlide.Invoke();
         Acceleration = 0f;
         _isInSlideRoutine = true;
-        //Vector3 Vel = Rigidbody.linearVelocity;
-        //IsSliding = true;
         float speedUpTimer = 0f;
         
         //SFx
@@ -292,9 +287,6 @@ public class CustomCharacterMovement : CharacterMovement3D
 
             yield return null;
         }
-
-
-        //var waitFixed = new WaitForFixedUpdate();
 
         while (Rigidbody.linearVelocity.magnitude > _stopSlideSpeedThreshold)
         {
@@ -536,7 +528,7 @@ public class CustomCharacterMovement : CharacterMovement3D
 
     #region SlowMoMovement
 
-
+    // In slowmo, the player movement speed is different
     [Header("SlowMoMovement")]
 
     private bool hasSlowed = false;

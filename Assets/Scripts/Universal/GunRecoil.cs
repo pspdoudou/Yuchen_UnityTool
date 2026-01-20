@@ -79,12 +79,12 @@ public class GunRecoil : MonoBehaviour
 
         _targetRotation = Vector3.Lerp(_targetRotation, Vector3.zero, _returnSpeed * Time.deltaTime); // calculate the target
         _currentRotation = Vector3.Slerp(_currentRotation,_targetRotation, _snappiness * Time.deltaTime); // lerp the current rotation to the target rotation
-        CineMachineRotate();
+        CineMachineRotate(); // Mouse control camera rotation
 
-        FOVZoom();
+        FOVZoom(); // ADS Zoom
     }
 
-    private float GetActiveSensitivity()
+    private float GetActiveSensitivity() // sensitivity from the setting menu
     {
         if (_sensData == null) return 0.05f;
 
@@ -109,7 +109,7 @@ public class GunRecoil : MonoBehaviour
         _mouseSens = _sensData.HipSens;
     }
 
-    public void RecoilFire()
+    public void RecoilFire() // Called when the gun is firing
     {
        // Debug.Log("Recoil");
        if(_gunManager.IsAimingIn && !_isInSlowMo) _targetRotation += new Vector3(_aimRecoilX, Random.Range(-_aimRecoilY, _aimRecoilY), Random.Range(-_aimRecoilZ, _aimRecoilZ));
